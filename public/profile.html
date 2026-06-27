@@ -1,0 +1,1309 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Class Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="home">
+  <div class="corner-controls">
+    <div class="language-switcher">
+      <button id="languageToggle" class="glass-icon-button language-toggle" type="button" data-label="languageLabel" aria-expanded="false">
+        <svg class="planet-icon" viewBox="0 0 48 48" aria-hidden="true">
+          <defs>
+            <linearGradient id="planetGradientProfile" x1="8" y1="8" x2="40" y2="40">
+              <stop offset="0%" stop-color="#8bd3ff" />
+              <stop offset="100%" stop-color="#b08cff" />
+            </linearGradient>
+          </defs>
+          <circle cx="24" cy="24" r="15" fill="none" stroke="url(#planetGradientProfile)" stroke-width="2.4" />
+          <ellipse cx="24" cy="24" rx="7" ry="15" fill="none" stroke="url(#planetGradientProfile)" stroke-width="1.7" />
+          <path d="M10 24h28M14 16h20M14 32h20" fill="none" stroke="url(#planetGradientProfile)" stroke-width="1.7" stroke-linecap="round" />
+          <path class="planet-orbit" d="M7 29c7 7 27 7 34-10" fill="none" stroke="url(#planetGradientProfile)" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </button>
+      <div id="languagePanel" class="language-panel" hidden>
+        <button type="button" data-lang-option="en">English</button>
+        <button type="button" data-lang-option="ru">&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</button>
+        <button type="button" data-lang-option="ua">&#1059;&#1082;&#1088;&#1072;&#1111;&#1085;&#1089;&#1100;&#1082;&#1072;</button>
+      </div>
+    </div>
+
+    <button id="floatingSettingsButton" class="glass-icon-button settings-icon-button" type="button" data-label="settingsAction">
+      <svg class="gear-icon" viewBox="0 0 48 48" aria-hidden="true">
+        <defs>
+          <linearGradient id="gearGradient" x1="10" y1="8" x2="38" y2="40">
+            <stop offset="0%" stop-color="#8bd3ff" />
+            <stop offset="100%" stop-color="#b08cff" />
+          </linearGradient>
+        </defs>
+        <path d="M24 8l2.6 4.1 4.8 1.1 4-2.4 3.2 5.5-3.7 3.2.3 4.9 4.1 2.6-2.8 5.8-4.8-1-4 2.8-.7 4.8h-6.4l-.7-4.8-4-2.8-4.8 1-2.8-5.8 4.1-2.6.3-4.9-3.7-3.2 3.2-5.5 4 2.4 4.8-1.1L24 8z" fill="none" stroke="url(#gearGradient)" stroke-width="2" stroke-linejoin="round" />
+        <circle cx="24" cy="24" r="6.2" fill="none" stroke="url(#gearGradient)" stroke-width="2.2" />
+      </svg>
+    </button>
+  </div>
+
+  <main class="dashboard-shell">
+    <nav class="topbar glass-card">
+      <div>
+        <p class="eyebrow" data-text="dashboardTitle">Class Dashboard</p>
+        <h1 id="sectionHeading" data-text="homeTitle">Home</h1>
+      </div>
+    </nav>
+
+    <nav class="section-nav glass-card" aria-label="Main navigation">
+      <button type="button" class="nav-link active" data-section="home" data-text="navHome">Home</button>
+      <button type="button" class="nav-link" data-section="news" data-text="navNews">News</button>
+      <button type="button" class="nav-link" data-section="books" data-text="navBooks">Books</button>
+      <button type="button" class="nav-link" data-section="homework" data-text="navHomework">Homework</button>
+      <button type="button" class="nav-link" data-section="timetable" data-text="navTimetable">Timetable</button>
+      <button type="button" class="nav-link" data-section="students" data-text="navStudents">Students</button>
+      <button type="button" class="nav-link" data-section="account" data-text="navAccount">Personal Account</button>
+      <button type="button" class="nav-link owner-only" data-section="users" data-text="navUsers" hidden>User Management</button>
+    </nav>
+
+    <section class="glass-card dashboard-panel">
+      <div id="homePanel" class="panel-view active">
+        <div class="home-welcome">
+          <p class="eyebrow" data-text="homeWelcome">Welcome back</p>
+          <h2 id="homeWelcomeName">Student</h2>
+        </div>
+        <div class="home-grid">
+          <article class="panel-card home-card">
+            <div class="home-card-header">
+              <h3 data-text="homeLatestNews">Latest news</h3>
+              <button type="button" class="home-link-button" id="homeViewNewsButton" data-text="homeViewAllNews">View all news</button>
+            </div>
+            <ul id="homeNewsPreview" class="preview-list">
+              <li class="loading" data-text="loadingProfile">Loading...</li>
+            </ul>
+          </article>
+
+          <article class="panel-card home-card">
+            <div class="home-card-header">
+              <h3 data-text="homeHomeworkPreview">Current homework</h3>
+            </div>
+            <ul id="homeHomeworkPreview" class="preview-list"></ul>
+          </article>
+
+          <article class="panel-card home-card">
+            <div class="home-card-header">
+              <h3 data-text="homeAnnouncements">Announcements</h3>
+            </div>
+            <ul id="homeAnnouncementsPreview" class="preview-list"></ul>
+          </article>
+        </div>
+      </div>
+
+      <div id="newsPanel" class="panel-view" hidden>
+        <p class="eyebrow" data-text="newsTitle">News</p>
+        <h2 data-text="newsTitle">News</h2>
+        <p class="subtle" data-text="newsIntro">All class news and updates, newest first.</p>
+        <button id="createPublicationButton" class="secondary-button reporter-only" type="button" data-text="createPublication" hidden>Create Publication</button>
+        <div id="newsList" class="news-list">
+          <p class="loading" data-text="loadingProfile">Loading...</p>
+        </div>
+      </div>
+
+      <div id="booksPanel" class="panel-view" hidden>
+        <div class="placeholder-card panel-card">
+          <p class="eyebrow" data-text="booksTitle">Books</p>
+          <h2 data-text="booksHeading">Class library</h2>
+          <p class="placeholder-status" data-text="booksPlaceholder">Coming soon</p>
+        </div>
+      </div>
+
+      <div id="homeworkPanel" class="panel-view" hidden>
+        <div class="placeholder-card panel-card">
+          <p class="eyebrow" data-text="homeworkTitle">Homework</p>
+          <h2 data-text="homeworkHeading">Assignments</h2>
+          <p class="placeholder-status" data-text="homeworkPlaceholder">Coming soon</p>
+        </div>
+      </div>
+
+      <div id="timetablePanel" class="panel-view" hidden>
+        <div class="placeholder-card panel-card">
+          <p class="eyebrow" data-text="timetableTitle">Timetable</p>
+          <h2 data-text="timetableHeading">Lesson schedule</h2>
+          <p class="placeholder-status" data-text="timetablePlaceholder">Coming soon</p>
+        </div>
+      </div>
+
+      <div id="studentsPanel" class="panel-view" hidden>
+        <p class="eyebrow" data-text="studentsTitle">Students list</p>
+        <h2 data-text="studentsTitle">Students list</h2>
+        <p class="subtle" data-text="studentsIntro">Class roster with names and birth dates.</p>
+        <div class="panel-card students-table-wrap">
+          <table class="students-table">
+            <thead>
+              <tr>
+                <th data-text="studentsId">№</th>
+                <th data-text="studentsFullName">Full name</th>
+                <th data-text="studentsBirthDate">Date of birth</th>
+              </tr>
+            </thead>
+            <tbody id="studentsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="accountPanel" class="panel-view" hidden>
+        <p class="eyebrow" data-text="accountTitle">Personal Account</p>
+        <h2 data-text="accountTitle">Personal Account</h2>
+
+        <div class="account-sections">
+          <section class="panel-card account-section">
+            <h3 data-text="accountInfoTitle">Account Info</h3>
+            <div class="account-header">
+              <div class="account-avatar-container">
+                <img id="accountAvatar" class="account-avatar" src="" alt="" data-alt="avatarLabel">
+              </div>
+              <div class="account-details">
+                <div class="info-item">
+                  <dt data-text="accountUserIdLabel">User ID</dt>
+                  <dd id="accountUserId" class="selectable-data">-</dd>
+                </div>
+                <div class="info-item">
+                  <dt data-text="accountEmailLabel">Email</dt>
+                  <dd id="accountEmail" class="selectable-data">-</dd>
+                </div>
+                <div class="info-item">
+                  <dt data-text="accountRoleLabel">Role</dt>
+                  <dd id="accountRole" class="selectable-data">-</dd>
+                </div>
+                <div class="info-item">
+                  <dt data-text="accountJoinedLabel">Registration date</dt>
+                  <dd id="accountJoined" class="selectable-data">-</dd>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-card account-section">
+            <h3 data-text="profileManagementTitle">Profile Management</h3>
+            <button id="accountEditProfileButton" class="secondary-button" type="button" data-text="editProfileAction">Edit Profile</button>
+          </section>
+
+          <section class="panel-card account-section">
+            <h3 data-text="accountActionsTitle">Actions</h3>
+            <button id="accountLogoutButton" class="secondary-button" type="button" data-text="logoutAction">Logout</button>
+          </section>
+        </div>
+      </div>
+
+      <div id="usersPanel" class="panel-view" hidden>
+        <p class="eyebrow" data-text="usersManagementTitle">User Management</p>
+        <h2 data-text="usersManagementTitle">User Management</h2>
+        <p class="subtle" data-text="usersManagementIntro">Manage user roles and permissions.</p>
+        <div class="panel-card users-table-wrap">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th data-text="usersTableId">ID</th>
+                <th data-text="usersTableAvatar">Avatar</th>
+                <th data-text="usersTableNickname">Nickname</th>
+                <th data-text="usersTableEmail">Email</th>
+                <th data-text="usersTableRole">Role</th>
+                <th data-text="usersTableActions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="createPublicationPanel" class="panel-view" hidden>
+        <div class="settings-header">
+          <div>
+            <p class="eyebrow" data-text="createPublication">Create Publication</p>
+            <h2 data-text="createPublication">Create Publication</h2>
+            <p class="subtle" data-text="newsIntro">Submit a new publication for review.</p>
+          </div>
+          <button class="secondary-button back-main-button" type="button" data-text="backAction">Back</button>
+        </div>
+
+        <form id="publicationForm" class="settings-form">
+          <label for="publicationTitleInput" data-text="publicationTitle">Publication Title</label>
+          <input id="publicationTitleInput" name="title" class="selectable-data" type="text" maxlength="200" required>
+
+          <label for="publicationDescriptionInput" data-text="publicationDescription">Description</label>
+          <textarea id="publicationDescriptionInput" name="description" class="selectable-data" rows="6" maxlength="10000" required></textarea>
+
+          <label for="publicationImageInput">Upload Image</label>
+          <input id="publicationImageInput" name="image" class="selectable-data" type="file" accept="image/jpeg,image/jpg,image/png,image/webp">
+
+          <div id="imagePreviewContainer" class="image-preview-container" hidden>
+            <img id="imagePreview" class="image-preview" alt="Image preview">
+            <button type="button" id="removeImageBtn" class="secondary-button">Remove</button>
+          </div>
+
+          <label class="checkbox-label">
+            <input id="publicationImportantInput" name="isImportant" type="checkbox">
+            <span data-text="publicationImportant">Important News</span>
+          </label>
+
+          <button type="submit" data-text="publicationSubmit">Submit Publication</button>
+          <p id="publicationMessage" class="message" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <div id="editProfilePanel" class="panel-view" hidden>
+        <div class="settings-header">
+          <div>
+            <p class="eyebrow" data-text="editProfileAction">Edit Profile</p>
+            <h2 data-text="editProfileTitle">Edit Profile</h2>
+            <p class="subtle" data-text="editProfileIntro">Update the personal details shown on your dashboard.</p>
+          </div>
+          <button class="secondary-button back-main-button" type="button" data-text="backAction">Back</button>
+        </div>
+
+        <form id="profileForm" class="settings-form">
+          <label for="nicknameInput" data-text="nicknameLabel">Nickname</label>
+          <input id="nicknameInput" name="nickname" class="selectable-data" type="text" maxlength="40" data-placeholder="nicknamePlaceholder" placeholder="How should we call you?">
+
+          <label for="avatarInput" data-text="avatarLabel">Avatar image</label>
+          <input id="avatarInput" name="avatar" class="selectable-data" type="url" data-placeholder="avatarUrlPlaceholder" placeholder="Paste an image URL or upload a file">
+
+          <label class="file-label" for="avatarFileInput" data-text="avatarFileLabel">Upload avatar</label>
+          <input id="avatarFileInput" name="avatarFile" type="file" accept="image/*">
+
+          <label for="birthDateInput" data-text="birthDateLabel">Birth date</label>
+          <input id="birthDateInput" name="birthDate" class="selectable-data" type="date" min="2000-01-01" max="2025-12-31">
+          <p class="field-hint" data-text="birthDateHint">Cosmetic only. Choose a date from 2000 to 2025.</p>
+
+          <button type="submit" data-text="saveProfile">Save profile</button>
+          <p id="profileMessage" class="message" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <div id="settingsPanel" class="panel-view" hidden>
+        <div class="settings-header">
+          <div>
+            <p class="eyebrow" data-text="settingsAction">Settings</p>
+            <h2 data-text="settingsTitle">Customize Dashboard</h2>
+            <p class="subtle" data-text="settingsIntro">Choose how your class dashboard feels when you open it.</p>
+          </div>
+          <button class="secondary-button back-main-button" type="button" data-text="backAction">Back</button>
+        </div>
+
+        <form id="settingsForm" class="settings-form">
+          <section class="settings-section">
+            <p class="eyebrow" data-text="interfaceSection">Interface</p>
+            <fieldset class="theme-fieldset">
+              <legend data-text="themeLabel">Theme color</legend>
+              <div class="theme-options">
+                <button type="button" class="theme-option" data-theme-option="blue">
+                  <span class="theme-swatch blue"></span>
+                  <span data-text="blueTheme">Blue</span>
+                </button>
+                <button type="button" class="theme-option" data-theme-option="purple">
+                  <span class="theme-swatch purple"></span>
+                  <span data-text="purpleTheme">Purple</span>
+                </button>
+                <button type="button" class="theme-option" data-theme-option="green">
+                  <span class="theme-swatch green"></span>
+                  <span data-text="greenTheme">Green</span>
+                </button>
+              </div>
+            </fieldset>
+
+            <label class="toggle-row">
+              <input id="reduceMotionInput" type="checkbox">
+              <span data-text="reduceMotionLabel">Calmer panel motion</span>
+            </label>
+          </section>
+
+          <section class="settings-section">
+            <p class="eyebrow" data-text="soundSection">Sound</p>
+            <label class="toggle-row">
+              <input id="soundEnabledInput" type="checkbox">
+              <span data-text="soundEnabledLabel">Enable UI sounds</span>
+            </label>
+
+            <fieldset class="theme-fieldset">
+              <legend data-text="clickSoundLabel">Click sound</legend>
+              <div class="theme-options sound-options">
+                <button type="button" class="theme-option" data-sound-option="default" data-text="defaultClickSound">Default click</button>
+                <button type="button" class="theme-option" data-sound-option="soft" data-text="softTapSound">Soft tap</button>
+                <button type="button" class="theme-option" data-sound-option="muted" data-text="mutedTapSound">Deep muted tap</button>
+              </div>
+            </fieldset>
+          </section>
+
+          <section class="settings-section">
+            <p class="eyebrow" data-text="otherSection">Other</p>
+            <p class="subtle" data-text="uiPreferencesLabel">UI preferences</p>
+          </section>
+
+          <button type="submit" data-text="saveSettings">Save settings</button>
+          <p id="settingsMessage" class="message" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div id="newsModal" class="modal-overlay" hidden>
+    <article class="modal-card glass-card" role="dialog" aria-modal="true" aria-labelledby="newsModalTitle">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" data-text="newsTitle">News</p>
+          <h2 id="newsModalTitle"></h2>
+          <p id="newsModalDate" class="news-date"></p>
+        </div>
+        <button id="newsModalClose" class="secondary-button" type="button" data-text="newsClose">Close</button>
+      </div>
+      <div id="newsModalBody" class="modal-body selectable-data"></div>
+    </article>
+  </div>
+
+  <script src="i18n.js"></script>
+  <script src="ui-sound.js"></script>
+  <script>
+    const sections = {
+      home: document.getElementById('homePanel'),
+      news: document.getElementById('newsPanel'),
+      books: document.getElementById('booksPanel'),
+      homework: document.getElementById('homeworkPanel'),
+      timetable: document.getElementById('timetablePanel'),
+      students: document.getElementById('studentsPanel'),
+      account: document.getElementById('accountPanel'),
+      users: document.getElementById('usersPanel')
+    };
+    const overlays = {
+      settings: document.getElementById('settingsPanel'),
+      editProfile: document.getElementById('editProfilePanel'),
+      createPublication: document.getElementById('createPublicationPanel')
+    };
+    const sectionTitleKeys = {
+      home: 'homeTitle',
+      news: 'newsTitle',
+      books: 'booksTitle',
+      homework: 'homeworkTitle',
+      timetable: 'timetableTitle',
+      students: 'studentsTitle',
+      account: 'accountTitle',
+      users: 'usersManagementTitle'
+    };
+    const sectionHeading = document.getElementById('sectionHeading');
+    const homeWelcomeName = document.getElementById('homeWelcomeName');
+    const homeNewsPreview = document.getElementById('homeNewsPreview');
+    const homeHomeworkPreview = document.getElementById('homeHomeworkPreview');
+    const homeAnnouncementsPreview = document.getElementById('homeAnnouncementsPreview');
+    const homeViewNewsButton = document.getElementById('homeViewNewsButton');
+    const newsList = document.getElementById('newsList');
+    const studentsBody = document.getElementById('studentsBody');
+    const usersBody = document.getElementById('usersBody');
+    const newsModal = document.getElementById('newsModal');
+    const newsModalTitle = document.getElementById('newsModalTitle');
+    const newsModalDate = document.getElementById('newsModalDate');
+    const newsModalBody = document.getElementById('newsModalBody');
+    const newsModalClose = document.getElementById('newsModalClose');
+    const accountEmail = document.getElementById('accountEmail');
+    const accountRole = document.getElementById('accountRole');
+    const accountJoined = document.getElementById('accountJoined');
+    const accountUserId = document.getElementById('accountUserId');
+    const accountAvatar = document.getElementById('accountAvatar');
+    const accountEditProfileButton = document.getElementById('accountEditProfileButton');
+    const accountLogoutButton = document.getElementById('accountLogoutButton');
+    const floatingSettingsButton = document.getElementById('floatingSettingsButton');
+    const createPublicationButton = document.getElementById('createPublicationButton');
+    const publicationForm = document.getElementById('publicationForm');
+    const publicationMessage = document.getElementById('publicationMessage');
+    const publicationTitleInput = document.getElementById('publicationTitleInput');
+    const publicationDescriptionInput = document.getElementById('publicationDescriptionInput');
+    const publicationImportantInput = document.getElementById('publicationImportantInput');
+    const publicationImageInput = document.getElementById('publicationImageInput');
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const removeImageBtn = document.getElementById('removeImageBtn');
+    let uploadedImageUrl = null;
+    const settingsForm = document.getElementById('settingsForm');
+    const profileForm = document.getElementById('profileForm');
+    const settingsMessage = document.getElementById('settingsMessage');
+    const profileMessage = document.getElementById('profileMessage');
+    const nicknameInput = document.getElementById('nicknameInput');
+    const avatarInput = document.getElementById('avatarInput');
+    const avatarFileInput = document.getElementById('avatarFileInput');
+    const birthDateInput = document.getElementById('birthDateInput');
+    const soundEnabledInput = document.getElementById('soundEnabledInput');
+    const reduceMotionInput = document.getElementById('reduceMotionInput');
+    const navLinks = document.querySelectorAll('[data-section]');
+    const token = localStorage.getItem('token');
+    const MOCK_HOMEWORK = [
+      { title: 'Math: exercises 12-15', dueDate: '2026-06-25' },
+      { title: 'History: chapter 4 summary', dueDate: '2026-06-27' },
+      { title: 'English: vocabulary list unit 6', dueDate: '2026-06-28' }
+    ];
+    const MOCK_STUDENTS = [
+      { id: 1, fullName: 'Азаров Богдан Олексійович', birthDate: '31.01.2013' },
+      { id: 2, fullName: 'Баранцова Уляна Романівна', birthDate: '22.07.2012' },
+      { id: 3, fullName: 'Варакута Ярослав Костянтинович', birthDate: '10.10.2012' },
+      { id: 4, fullName: 'Гавриленко Діана Дмитрівна', birthDate: '17.07.2013' },
+      { id: 5, fullName: 'Григоренко Софія Романівна', birthDate: '23.01.2013' },
+      { id: 6, fullName: 'Дерев\'янко Катерина Олександрівна', birthDate: '15.04.2013' },
+      { id: 7, fullName: 'Косов Ярослав Костянтинович', birthDate: '08.04.2013' },
+      { id: 8, fullName: 'Кравцов Володимир Євгенович', birthDate: '21.06.2012' },
+      { id: 9, fullName: 'Кузнецова Вікторія Віталіївна', birthDate: '08.09.2012' },
+      { id: 10, fullName: 'Малиш Матвій Вадимович', birthDate: '10.04.2013' },
+      { id: 11, fullName: 'Мисенкова Таїсія Олексіївна', birthDate: '19.02.2013' },
+      { id: 12, fullName: 'Мошенець Аліна Михайлівна', birthDate: '04.03.2013' },
+      { id: 13, fullName: 'Нітченко Іван Максимович', birthDate: '20.01.2013' },
+      { id: 14, fullName: 'Петров Кіріл Ігорович', birthDate: '10.06.2013' },
+      { id: 15, fullName: 'Питайло Єва Олександрівна', birthDate: '03.09.2012' },
+      { id: 16, fullName: 'Рабовер Андрій Геннадійович', birthDate: '14.12.2012' },
+      { id: 17, fullName: 'Руденко Мілена Максимівна', birthDate: '02.02.2012' },
+      { id: 18, fullName: 'Сальник Крістіна Дмитрівна', birthDate: '14.06.2012' },
+      { id: 19, fullName: 'Самарець Софія Сергіївна', birthDate: '18.05.2013' },
+      { id: 20, fullName: 'Сарана Гліб Сергійович', birthDate: '09.07.2013' },
+      { id: 21, fullName: 'Семенов Богдан Дмитрович', birthDate: '30.01.2013' },
+      { id: 22, fullName: 'Семенов Кирило Ігорович', birthDate: '05.09.2012' },
+      { id: 23, fullName: 'Сердюк Оскар Сергійович', birthDate: '19.07.2013' },
+      { id: 24, fullName: 'Силіч Артем Павлович', birthDate: '14.09.2012' },
+      { id: 25, fullName: 'Сова Анна Михайлівна', birthDate: '12.08.2013' },
+      { id: 26, fullName: 'Сотникова Аліна Миколаївна', birthDate: '14.05.2013' },
+      { id: 27, fullName: 'Чоповий Володимир Олексійович', birthDate: '09.04.2013' },
+      { id: 28, fullName: 'Шляпін Андрій Павлович', birthDate: '20.01.2013' },
+      { id: 29, fullName: 'Щуренко Артем Миколайович', birthDate: '07.01.2013' }
+    ];
+    let currentUser = null;
+    let currentSection = 'home';
+    let activeOverlay = null;
+    let newsItems = [];
+    let selectedTheme = localStorage.getItem('theme') || 'blue';
+
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    applyTheme(selectedTheme);
+    hydrateSoundSettings();
+    renderStudents();
+    renderHomeworkPreview();
+
+    function authHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      };
+    }
+
+    function playClick(soundType) {
+      if (window.uiSound) {
+        window.uiSound.playClick(soundType);
+      }
+    }
+
+    function getActivePanel() {
+      return document.querySelector('.panel-view:not([hidden])');
+    }
+
+    function switchPanel(activePanel, nextPanel) {
+      if (!nextPanel || activePanel === nextPanel) {
+        return;
+      }
+
+      if (activePanel) {
+        activePanel.classList.remove('active');
+      }
+
+      setTimeout(() => {
+        Object.values(sections).forEach((panel) => {
+          panel.hidden = true;
+          panel.classList.remove('active');
+        });
+        Object.values(overlays).forEach((panel) => {
+          panel.hidden = true;
+          panel.classList.remove('active');
+        });
+        nextPanel.hidden = false;
+        requestAnimationFrame(() => {
+          nextPanel.classList.add('active');
+        });
+      }, document.body.classList.contains('calm-motion') ? 60 : 170);
+    }
+
+    function updateSectionHeading(sectionName) {
+      const titleKey = sectionTitleKeys[sectionName] || 'homeTitle';
+      sectionHeading.dataset.text = titleKey;
+      sectionHeading.textContent = translate(titleKey);
+      document.body.dataset.page = sectionName;
+      document.title = translate(titleKey) + ' | ' + translate('brandName');
+    }
+
+    function setActiveNav(sectionName) {
+      navLinks.forEach((link) => {
+        link.classList.toggle('active', link.dataset.section === sectionName);
+      });
+    }
+
+    function showSection(sectionName, options = {}) {
+      const nextSection = sections[sectionName];
+      if (!nextSection) {
+        return;
+      }
+
+      if (!options.silent) {
+        playClick();
+      }
+
+      activeOverlay = null;
+      currentSection = sectionName;
+      switchPanel(getActivePanel(), nextSection);
+      setActiveNav(sectionName);
+      updateSectionHeading(sectionName);
+
+      if (sectionName === 'news' && newsItems.length === 0) {
+        loadNews();
+      }
+
+      if (sectionName === 'users') {
+        loadUsers();
+      }
+
+      if (!options.silent) {
+        history.replaceState(null, '', `#${sectionName}`);
+      }
+    }
+
+    function showOverlay(overlayName) {
+      const nextOverlay = overlays[overlayName];
+      if (!nextOverlay) {
+        return;
+      }
+
+      playClick();
+      activeOverlay = overlayName;
+      switchPanel(getActivePanel(), nextOverlay);
+      navLinks.forEach((link) => link.classList.remove('active'));
+    }
+
+    function showMain() {
+      playClick();
+      activeOverlay = null;
+      showSection(currentSection, { silent: true });
+    }
+
+    function showSettings() {
+      showOverlay('settings');
+    }
+
+    function showEditProfile() {
+      showOverlay('editProfile');
+    }
+
+    function applyTheme(theme) {
+      selectedTheme = ['blue', 'purple', 'green'].includes(theme) ? theme : 'blue';
+      document.body.dataset.theme = selectedTheme;
+      localStorage.setItem('theme', selectedTheme);
+      document.querySelectorAll('[data-theme-option]').forEach((button) => {
+        button.classList.toggle('active', button.dataset.themeOption === selectedTheme);
+      });
+    }
+
+    function hydrateSoundSettings() {
+      const soundPreferences = window.uiSound
+        ? window.uiSound.getPreferences()
+        : { enabled: true, type: 'default' };
+      soundEnabledInput.checked = soundPreferences.enabled;
+      reduceMotionInput.checked = localStorage.getItem('reduceMotion') === 'true';
+      document.body.classList.toggle('calm-motion', reduceMotionInput.checked);
+      document.querySelectorAll('[data-sound-option]').forEach((button) => {
+        button.classList.toggle('active', button.dataset.soundOption === soundPreferences.type);
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function escapeAttribute(value) {
+      return escapeHtml(value);
+    }
+
+    function formatNewsDate(value) {
+      return new Date(value).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+
+    function syncProfileForm(user) {
+      nicknameInput.value = user.nickname || '';
+      avatarInput.value = user.avatar && !user.avatar.startsWith('data:') ? user.avatar : '';
+      birthDateInput.value = user.birthDate || '';
+    }
+
+    function updateWelcomeName(user) {
+      const displayLabel = user.nickname || user.email;
+      homeWelcomeName.textContent = displayLabel;
+    }
+
+    function updateAccountInfo(user) {
+      accountUserId.textContent = user.id || '-';
+      accountEmail.textContent = user.email || '-';
+      accountRole.textContent = user.role || 'student';
+      accountJoined.textContent = user.created_at ? formatNewsDate(user.created_at) : '-';
+      
+      if (user.avatar) {
+        accountAvatar.src = user.avatar;
+        accountAvatar.hidden = false;
+      } else {
+        accountAvatar.hidden = true;
+      }
+    }
+
+    function renderHomeworkPreview() {
+      homeHomeworkPreview.innerHTML = MOCK_HOMEWORK.slice(0, 3).map((item) => `
+        <li>
+          <span class="preview-title selectable-data">${escapeHtml(item.title)}</span>
+          <span class="preview-meta selectable-data">${escapeHtml(formatNewsDate(item.dueDate))}</span>
+        </li>
+      `).join('');
+    }
+
+    function renderStudents() {
+      studentsBody.innerHTML = MOCK_STUDENTS.map((student) => `
+        <tr>
+          <td class="selectable-data">${escapeHtml(student.id)}</td>
+          <td class="selectable-data">${escapeHtml(student.fullName)}</td>
+          <td class="selectable-data">${escapeHtml(student.birthDate)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function loadUsers() {
+      fetch('/users', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Failed to load users');
+          }
+          return response.json();
+        })
+        .then((data) => {
+          renderUsers(data.users);
+        })
+        .catch((error) => {
+          console.error('Error loading users:', error);
+          usersBody.innerHTML = '<tr><td colspan="6" class="selectable-data">Failed to load users</td></tr>';
+        });
+    }
+
+    function renderUsers(users) {
+      usersBody.innerHTML = users.map((user) => `
+        <tr>
+          <td class="selectable-data">${escapeHtml(user.id)}</td>
+          <td>
+            ${user.avatar ? `<img src="${escapeHtml(user.avatar)}" alt="" class="user-avatar" data-alt="avatarLabel">` : '<div class="user-avatar"></div>'}
+          </td>
+          <td class="selectable-data">${escapeHtml(user.nickname || '-')}</td>
+          <td class="selectable-data">${escapeHtml(user.email)}</td>
+          <td><span class="role-badge ${escapeHtml(user.role || 'user')}">${translate('role' + (user.role || 'user').charAt(0).toUpperCase() + (user.role || 'user').slice(1))}</span></td>
+          <td>
+            <select class="role-select" data-user-id="${escapeHtml(user.id)}" onchange="handleRoleChange(this)">
+              <option value="user" ${user.role === 'user' ? 'selected' : ''}>${translate('roleUser')}</option>
+              <option value="reporter" ${user.role === 'reporter' ? 'selected' : ''}>${translate('roleReporter')}</option>
+              <option value="moderator" ${user.role === 'moderator' ? 'selected' : ''}>${translate('roleModerator')}</option>
+              <option value="owner" ${user.role === 'owner' ? 'selected' : ''}>${translate('roleOwner')}</option>
+            </select>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function handleRoleChange(select) {
+      const userId = select.dataset.userId;
+      const newRole = select.value;
+
+      fetch(`/users/${userId}/role`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ role: newRole })
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Failed to update role');
+          }
+          return response.json();
+        })
+        .then((data) => {
+          loadUsers();
+        })
+        .catch((error) => {
+          console.error('Error updating role:', error);
+          alert('Failed to update role');
+          loadUsers();
+        });
+    }
+
+    function updateRoleBasedUI(user) {
+      const ownerElements = document.querySelectorAll('.owner-only');
+      const reporterElements = document.querySelectorAll('.reporter-only');
+      const isOwner = user.role === 'owner';
+      const isReporter = user.role === 'reporter';
+
+      ownerElements.forEach((element) => {
+        element.hidden = !isOwner;
+      });
+
+      reporterElements.forEach((element) => {
+        element.hidden = !(isOwner || isReporter);
+      });
+    }
+
+    function renderNewsCard(item, compact) {
+      const importantBadge = item.isImportant
+        ? `<span class="news-item-important">${escapeHtml(translate('publicationImportant'))}</span>`
+        : '';
+
+      const statusBadge = item.status && item.status !== 'approved'
+        ? `<span class="news-item-status ${escapeHtml(item.status)}">${escapeHtml(translate('publicationStatus' + item.status.charAt(0).toUpperCase() + item.status.slice(1)))}</span>`
+        : '';
+
+      const media = item.media
+        ? `<img src="${escapeHtml(item.media)}" alt="" class="news-item-media" data-alt="publicationMedia">`
+        : '';
+
+      const authorInfo = item.createdBy
+        ? `<span class="selectable-data">${escapeHtml(translate('publicationAuthor'))}: ID ${item.createdBy}</span>`
+        : '';
+
+      const canModerate = currentUser && (currentUser.role === 'owner' || currentUser.role === 'moderator');
+      const canDeleteOwn = currentUser && currentUser.role === 'reporter' && item.createdBy === currentUser.id && item.status !== 'approved';
+
+      let moderationControls = '';
+      if (canModerate && item.status === 'pending') {
+        moderationControls = `
+          <div class="news-item-actions">
+            <button class="approve-button" type="button" onclick="approveNews(${item.id})" data-text="publicationApprove">${escapeHtml(translate('publicationApprove'))}</button>
+            <button class="reject-button" type="button" onclick="rejectNews(${item.id})" data-text="publicationReject">${escapeHtml(translate('publicationReject'))}</button>
+          </div>
+        `;
+      }
+
+      if (canModerate) {
+        moderationControls += `
+          <div class="news-item-actions">
+            <button class="delete-button" type="button" onclick="deleteNews(${item.id})" data-text="publicationDelete">${escapeHtml(translate('publicationDelete'))}</button>
+          </div>
+        `;
+      }
+
+      if (canDeleteOwn) {
+        moderationControls += `
+          <div class="news-item-actions">
+            <button class="delete-button" type="button" onclick="deleteNews(${item.id})" data-text="publicationDelete">${escapeHtml(translate('publicationDelete'))}</button>
+          </div>
+        `;
+      }
+
+      if (compact) {
+        return `
+          <li data-news-id="${item.id}">
+            <span class="preview-title selectable-data">${escapeHtml(item.title)}</span>
+            <span class="preview-meta selectable-data">${escapeHtml(formatNewsDate(item.created_at))}</span>
+          </li>
+        `;
+      }
+
+      return `
+        <article class="news-item" data-news-id="${item.id}" tabindex="0" role="button">
+          <div class="news-item-header">
+            <h3 class="selectable-data">${escapeHtml(item.title)}</h3>
+            ${importantBadge}
+            ${statusBadge}
+          </div>
+          ${media}
+          <p class="news-date selectable-data">${escapeHtml(translate('publicationDate'))}: ${escapeHtml(formatNewsDate(item.created_at))}</p>
+          <p class="news-preview selectable-data">${escapeHtml(item.description)}</p>
+          <div class="news-item-meta">
+            ${authorInfo}
+          </div>
+          ${moderationControls}
+        </article>
+      `;
+    }
+
+    function renderHomeNews(news) {
+      const latestNews = news.filter((item) => item.status === 'approved').slice(0, 5);
+
+      if (latestNews.length === 0) {
+        homeNewsPreview.innerHTML = `<li class="subtle">${escapeHtml(translate('homeNoNews'))}</li>`;
+      } else {
+        homeNewsPreview.innerHTML = latestNews.map((item) => renderNewsCard(item, true)).join('');
+        homeNewsPreview.querySelectorAll('[data-news-id]').forEach((node) => {
+          node.addEventListener('click', () => openNewsModal(Number(node.dataset.newsId)));
+        });
+      }
+
+      const announcements = news.filter((item) => item.isImportant && item.status === 'approved').slice(0, 3);
+
+      if (announcements.length === 0) {
+        homeAnnouncementsPreview.innerHTML = `<li class="subtle">${escapeHtml(translate('homeNoAnnouncements'))}</li>`;
+      } else {
+        homeAnnouncementsPreview.innerHTML = announcements.map((item) => renderNewsCard(item, true)).join('');
+        homeAnnouncementsPreview.querySelectorAll('[data-news-id]').forEach((node) => {
+          node.addEventListener('click', () => openNewsModal(Number(node.dataset.newsId)));
+        });
+      }
+    }
+
+    function renderNewsPage(news) {
+      if (news.length === 0) {
+        newsList.innerHTML = `<p class="subtle">${escapeHtml(translate('noPublications'))}</p>`;
+        return;
+      }
+
+      newsList.innerHTML = news.map((item) => renderNewsCard(item, false)).join('');
+      newsList.querySelectorAll('.news-item').forEach((node) => {
+        const openItem = () => openNewsModal(Number(node.dataset.newsId));
+        node.addEventListener('click', openItem);
+        node.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openItem();
+          }
+        });
+      });
+    }
+
+    function showCreatePublication() {
+      playClick();
+      showOverlay('createPublication');
+    }
+
+    function handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) {
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      fetch('/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      })
+        .then((response) => {
+          if (!response.ok) {
+            return response.json().then((data) => {
+              throw new Error(data.message || 'Failed to upload image');
+            });
+          }
+          return response.json();
+        })
+        .then((data) => {
+          uploadedImageUrl = data.imageUrl;
+          imagePreview.src = uploadedImageUrl;
+          imagePreviewContainer.hidden = false;
+        })
+        .catch((error) => {
+          console.error('Error uploading image:', error);
+          alert(error.message || 'Failed to upload image');
+        });
+    }
+
+    function removeImage() {
+      uploadedImageUrl = null;
+      imagePreview.src = '';
+      imagePreviewContainer.hidden = true;
+      publicationImageInput.value = '';
+    }
+
+    function createPublication(event) {
+      event.preventDefault();
+
+      const title = publicationTitleInput.value.trim();
+      const description = publicationDescriptionInput.value.trim();
+      const media = uploadedImageUrl || '';
+      const isImportant = publicationImportantInput.checked;
+
+      if (!title || !description) {
+        publicationMessage.textContent = 'Title and description are required.';
+        publicationMessage.className = 'message error';
+        return;
+      }
+
+      fetch('/news', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title, description, media, isImportant })
+      })
+        .then((response) => {
+          if (!response.ok) {
+            return response.json().then((data) => {
+              throw new Error(data.message || 'Failed to create publication');
+            });
+          }
+          return response.json();
+        })
+        .then((data) => {
+          publicationMessage.textContent = translate('publicationCreated');
+          publicationMessage.className = 'message success';
+          publicationForm.reset();
+          removeImage();
+          loadNews();
+          setTimeout(showMain, 1500);
+        })
+        .catch((error) => {
+          console.error('Error creating publication:', error);
+          publicationMessage.textContent = error.message || 'Failed to create publication';
+          publicationMessage.className = 'message error';
+        });
+    }
+
+    function approveNews(newsId) {
+      fetch(`/news/${newsId}/status`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: 'approved' })
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Failed to approve news');
+          }
+          return response.json();
+        })
+        .then((data) => {
+          loadNews();
+        })
+        .catch((error) => {
+          console.error('Error approving news:', error);
+          alert('Failed to approve news');
+        });
+    }
+
+    function rejectNews(newsId) {
+      fetch(`/news/${newsId}/status`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: 'rejected' })
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Failed to reject news');
+          }
+          return response.json();
+        })
+        .then((data) => {
+          loadNews();
+        })
+        .catch((error) => {
+          console.error('Error rejecting news:', error);
+          alert('Failed to reject news');
+        });
+    }
+
+    function deleteNews(newsId) {
+      if (!confirm('Are you sure you want to delete this publication?')) {
+        return;
+      }
+
+      fetch(`/news/${newsId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Failed to delete news');
+          }
+          return response.json();
+        })
+        .then((data) => {
+          loadNews();
+        })
+        .catch((error) => {
+          console.error('Error deleting news:', error);
+          alert('Failed to delete news');
+        });
+    }
+
+    function openNewsModal(newsId) {
+      const item = newsItems.find((entry) => entry.id === newsId);
+      if (!item) {
+        return;
+      }
+
+      playClick('soft');
+      newsModalTitle.textContent = item.title;
+      newsModalDate.textContent = `${translate('publicationDate')}: ${formatNewsDate(item.created_at)}`;
+      newsModalBody.textContent = item.description;
+      newsModal.hidden = false;
+      requestAnimationFrame(() => {
+        newsModal.classList.add('open');
+      });
+    }
+
+    function closeNewsModal() {
+      playClick('soft');
+      newsModal.classList.remove('open');
+      setTimeout(() => {
+        newsModal.hidden = true;
+      }, document.body.classList.contains('calm-motion') ? 60 : 180);
+    }
+
+    async function loadNews() {
+      homeNewsPreview.innerHTML = `<li class="loading">${escapeHtml(translate('loadingProfile'))}</li>`;
+      newsList.innerHTML = `<p class="loading">${escapeHtml(translate('loadingProfile'))}</p>`;
+
+      try {
+        const response = await fetch('/news', {
+          headers: authHeaders()
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || translate('newsLoadError'));
+        }
+
+        newsItems = data.news || [];
+        renderHomeNews(newsItems);
+        renderNewsPage(newsItems);
+      } catch (error) {
+        const message = `<p class="message error">${escapeHtml(translate('newsLoadError'))}</p>`;
+        homeNewsPreview.innerHTML = `<li class="message error">${escapeHtml(translate('newsLoadError'))}</li>`;
+        newsList.innerHTML = message;
+      }
+    }
+
+    async function loadProfile() {
+      try {
+        const response = await fetch('/me', {
+          headers: authHeaders()
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          localStorage.removeItem('token');
+          window.location.href = 'login.html';
+          return;
+        }
+
+        currentUser = data.user;
+        applyTheme(currentUser.theme || localStorage.getItem('theme') || 'blue');
+        syncProfileForm(currentUser);
+        updateWelcomeName(currentUser);
+        updateAccountInfo(currentUser);
+        updateRoleBasedUI(currentUser);
+        loadNews();
+      } catch (error) {
+        homeNewsPreview.innerHTML = `<li class="message error">${escapeHtml(translate('profileLoadError'))}</li>`;
+      }
+    }
+
+    navLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        showSection(link.dataset.section);
+      });
+    });
+
+    homeViewNewsButton.addEventListener('click', () => {
+      showSection('news');
+    });
+
+    accountEditProfileButton.addEventListener('click', showEditProfile);
+    accountLogoutButton.addEventListener('click', () => {
+      playClick();
+      localStorage.removeItem('token');
+      window.location.href = 'login.html';
+    });
+    floatingSettingsButton.addEventListener('click', showSettings);
+    createPublicationButton.addEventListener('click', showCreatePublication);
+    publicationForm.addEventListener('submit', createPublication);
+    publicationImageInput.addEventListener('change', handleImageUpload);
+    removeImageBtn.addEventListener('click', removeImage);
+    document.querySelectorAll('.back-main-button').forEach((button) => {
+      button.addEventListener('click', showMain);
+    });
+
+    document.getElementById('languageToggle').addEventListener('click', () => playClick('soft'));
+    document.querySelectorAll('[data-lang-option]').forEach((button) => {
+      button.addEventListener('click', () => {
+        playClick('soft');
+        setTimeout(() => {
+          updateSectionHeading(currentSection);
+          renderHomeworkPreview();
+          if (newsItems.length) {
+            renderHomeNews(newsItems);
+            renderNewsPage(newsItems);
+          }
+        }, 0);
+      });
+    });
+
+    document.querySelectorAll('[data-theme-option]').forEach((button) => {
+      button.addEventListener('click', () => {
+        applyTheme(button.dataset.themeOption);
+      });
+    });
+
+    document.querySelectorAll('[data-sound-option]').forEach((button) => {
+      button.addEventListener('click', () => {
+        if (window.uiSound) {
+          window.uiSound.setType(button.dataset.soundOption);
+          window.uiSound.playClick(button.dataset.soundOption);
+        }
+        hydrateSoundSettings();
+      });
+    });
+
+    soundEnabledInput.addEventListener('change', () => {
+      if (window.uiSound) {
+        window.uiSound.setEnabled(soundEnabledInput.checked);
+        window.uiSound.playClick();
+      }
+    });
+
+    reduceMotionInput.addEventListener('change', () => {
+      localStorage.setItem('reduceMotion', String(reduceMotionInput.checked));
+      document.body.classList.toggle('calm-motion', reduceMotionInput.checked);
+      playClick();
+    });
+
+    avatarFileInput.addEventListener('change', () => {
+      const file = avatarFileInput.files[0];
+      if (!file) {
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        avatarInput.value = reader.result;
+      });
+      reader.readAsDataURL(file);
+    });
+
+    newsModalClose.addEventListener('click', closeNewsModal);
+    newsModal.addEventListener('click', (event) => {
+      if (event.target === newsModal) {
+        closeNewsModal();
+      }
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !newsModal.hidden) {
+        closeNewsModal();
+      }
+    });
+
+    settingsForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      playClick();
+      settingsMessage.textContent = translate('saveProgress');
+      settingsMessage.className = 'message';
+
+      try {
+        const response = await fetch('/update-settings', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ theme: selectedTheme })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          settingsMessage.textContent = data.message || translate('saveError');
+          settingsMessage.classList.add('error');
+          return;
+        }
+
+        currentUser = { ...currentUser, theme: data.user.theme };
+        localStorage.setItem('theme', data.user.theme);
+        settingsMessage.textContent = translate('saveSuccess');
+        settingsMessage.classList.add('success');
+      } catch (error) {
+        settingsMessage.textContent = translate('saveError');
+        settingsMessage.classList.add('error');
+      }
+    });
+
+    profileForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      playClick();
+      profileMessage.textContent = translate('profileSaveProgress');
+      profileMessage.className = 'message';
+
+      try {
+        const response = await fetch('/update-profile', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({
+            nickname: nicknameInput.value,
+            avatar: avatarInput.value,
+            birthDate: birthDateInput.value
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          profileMessage.textContent = data.message || translate('profileSaveError');
+          profileMessage.classList.add('error');
+          return;
+        }
+
+        currentUser = {
+          ...currentUser,
+          nickname: data.user.nickname,
+          avatar: data.user.avatar,
+          birthDate: data.user.birthDate
+        };
+        updateWelcomeName(currentUser);
+        profileMessage.textContent = translate('profileSaveSuccess');
+        profileMessage.classList.add('success');
+      } catch (error) {
+        profileMessage.textContent = translate('profileSaveError');
+        profileMessage.classList.add('error');
+      }
+    });
+
+    window.addEventListener('hashchange', () => {
+      const hashSection = location.hash.replace('#', '');
+      if (sections[hashSection] && hashSection !== currentSection && !activeOverlay) {
+        showSection(hashSection, { silent: true });
+      }
+    });
+
+    const initialHash = location.hash.replace('#', '');
+    if (sections[initialHash]) {
+      currentSection = initialHash;
+      Object.values(sections).forEach((panel) => {
+        panel.hidden = panel !== sections[initialHash];
+        panel.classList.toggle('active', panel === sections[initialHash]);
+      });
+      setActiveNav(initialHash);
+      updateSectionHeading(initialHash);
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>

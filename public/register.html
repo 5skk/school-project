@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register | Class Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="register">
+  <div class="language-switcher">
+    <button id="languageToggle" class="language-toggle" type="button" data-label="languageLabel" aria-expanded="false">
+      <svg class="planet-icon" viewBox="0 0 48 48" aria-hidden="true">
+        <defs>
+          <linearGradient id="planetGradientRegister" x1="8" y1="8" x2="40" y2="40">
+            <stop offset="0%" stop-color="#8bd3ff" />
+            <stop offset="100%" stop-color="#b08cff" />
+          </linearGradient>
+        </defs>
+        <circle cx="24" cy="24" r="15" fill="none" stroke="url(#planetGradientRegister)" stroke-width="2.4" />
+        <ellipse cx="24" cy="24" rx="7" ry="15" fill="none" stroke="url(#planetGradientRegister)" stroke-width="1.7" />
+        <path d="M10 24h28M14 16h20M14 32h20" fill="none" stroke="url(#planetGradientRegister)" stroke-width="1.7" stroke-linecap="round" />
+        <path class="planet-orbit" d="M7 29c7 7 27 7 34-10" fill="none" stroke="url(#planetGradientRegister)" stroke-width="1.8" stroke-linecap="round" />
+      </svg>
+    </button>
+    <div id="languagePanel" class="language-panel" hidden>
+      <button type="button" data-lang-option="en">English</button>
+      <button type="button" data-lang-option="ru">&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</button>
+      <button type="button" data-lang-option="ua">&#1059;&#1082;&#1088;&#1072;&#1111;&#1085;&#1089;&#1100;&#1082;&#1072;</button>
+    </div>
+  </div>
+
+  <main class="auth-shell">
+    <section class="glass-card auth-card">
+      <div class="brand-mark">C</div>
+      <p class="eyebrow" data-text="brandName">Class Dashboard</p>
+      <h1 data-text="registerTitle">Register</h1>
+      <p class="subtle" data-text="registerIntro">Create your account to join the class dashboard.</p>
+
+      <form id="registerForm" class="form">
+        <label for="email" data-text="emailLabel">Email</label>
+        <input id="email" name="email" type="email" placeholder="student@example.com" data-placeholder="emailPlaceholder" autocomplete="email" required>
+
+        <label for="password" data-text="passwordLabel">Password</label>
+        <input id="password" name="password" type="password" placeholder="At least 6 characters" data-placeholder="newPasswordPlaceholder" autocomplete="new-password" required minlength="6">
+
+        <button type="submit" data-text="registerAction">Create account</button>
+      </form>
+
+      <p id="message" class="message" aria-live="polite"></p>
+      <p class="switch-link"><span data-text="alreadyHaveAccount">Already have an account?</span> <a href="login.html" data-text="loginLink">Login</a></p>
+    </section>
+  </main>
+
+  <script src="i18n.js"></script>
+  <script>
+    const form = document.getElementById('registerForm');
+    const message = document.getElementById('message');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      message.textContent = translate('registerProgress');
+      message.className = 'message';
+
+      const email = form.email.value;
+      const password = form.password.value;
+
+      try {
+        const response = await fetch('/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        await response.json();
+
+        if (!response.ok) {
+          message.textContent = translate('registerError');
+          message.classList.add('error');
+          return;
+        }
+
+        message.textContent = translate('registerSuccess');
+        message.classList.add('success');
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 900);
+      } catch (error) {
+        message.textContent = translate('generalError');
+        message.classList.add('error');
+      }
+    });
+  </script>
+</body>
+</html>
