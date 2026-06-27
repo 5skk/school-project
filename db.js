@@ -156,6 +156,45 @@ db.serialize(() => {
       }
     });
   });
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS comments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      newsId INTEGER NOT NULL,
+      authorId INTEGER NOT NULL,
+      text TEXT NOT NULL,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (newsId) REFERENCES news(id) ON DELETE CASCADE,
+      FOREIGN KEY (authorId) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS news_reactions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      newsId INTEGER NOT NULL,
+      userId INTEGER NOT NULL,
+      reaction TEXT NOT NULL,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(newsId, userId),
+      FOREIGN KEY (newsId) REFERENCES news(id) ON DELETE CASCADE,
+      FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS comment_reactions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      commentId INTEGER NOT NULL,
+      userId INTEGER NOT NULL,
+      reaction TEXT NOT NULL,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(commentId, userId),
+      FOREIGN KEY (commentId) REFERENCES comments(id) ON DELETE CASCADE,
+      FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
 });
 
 module.exports = db;
