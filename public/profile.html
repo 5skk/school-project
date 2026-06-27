@@ -357,6 +357,28 @@
     </article>
   </div>
 
+  <aside id="commentsDrawer" class="comments-drawer" hidden aria-labelledby="commentsDrawerTitle">
+    <div class="comments-backdrop" id="commentsBackdrop"></div>
+    <section class="comments-panel glass-card">
+      <header class="comments-header">
+        <div>
+          <p class="eyebrow" data-text="commentsTitle">Comments</p>
+          <h2 id="commentsDrawerTitle" data-text="commentsTitle">Comments</h2>
+          <p id="commentsDrawerCount" class="subtle"></p>
+        </div>
+        <button id="commentsCloseButton" class="secondary-button" type="button" data-text="newsClose">Close</button>
+      </header>
+
+      <article id="commentsNewsCard" class="comments-news-card"></article>
+      <div id="commentsList" class="comments-list"></div>
+
+      <form id="commentForm" class="comment-input-bar">
+        <input id="commentInput" class="selectable-data" type="text" maxlength="2000" data-placeholder="commentPlaceholder" placeholder="Write a comment...">
+        <button type="submit" data-text="commentSend">Send</button>
+      </form>
+    </section>
+  </aside>
+
   <script src="i18n.js"></script>
   <script src="ui-sound.js"></script>
   <script>
@@ -399,6 +421,14 @@
     const newsModalDate = document.getElementById('newsModalDate');
     const newsModalBody = document.getElementById('newsModalBody');
     const newsModalClose = document.getElementById('newsModalClose');
+    const commentsDrawer = document.getElementById('commentsDrawer');
+    const commentsBackdrop = document.getElementById('commentsBackdrop');
+    const commentsCloseButton = document.getElementById('commentsCloseButton');
+    const commentsNewsCard = document.getElementById('commentsNewsCard');
+    const commentsList = document.getElementById('commentsList');
+    const commentsDrawerCount = document.getElementById('commentsDrawerCount');
+    const commentForm = document.getElementById('commentForm');
+    const commentInput = document.getElementById('commentInput');
     const accountEmail = document.getElementById('accountEmail');
     const accountRole = document.getElementById('accountRole');
     const accountJoined = document.getElementById('accountJoined');
@@ -470,7 +500,15 @@
     let currentSection = 'home';
     let activeOverlay = null;
     let newsItems = [];
+    let activeCommentsNewsId = null;
     let selectedTheme = localStorage.getItem('theme') || 'blue';
+    const REACTIONS = [
+      { key: 'like', emoji: '👍', label: 'reactionLike' },
+      { key: 'love', emoji: '❤️', label: 'reactionLove' },
+      { key: 'funny', emoji: '😂', label: 'reactionFunny' },
+      { key: 'wow', emoji: '😮', label: 'reactionWow' },
+      { key: 'dislike', emoji: '👎', label: 'reactionDislike' }
+    ];
 
     if (!token) {
       window.location.href = 'login.html';
@@ -634,6 +672,83 @@
       });
     }
 
+    function formatCommentDate(value) {
+      return new Date(value).toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function getDisplayName(userLike) {
+      return userLike.nickname || userLike.email || `ID ${userLike.authorId || userLike.id}`;
+    }
+
+    function getAvatarMarkup(userLike, className = 'comment-avatar') {
+      const displayName = getDisplayName(userLike);
+      if (userLike.avatar) {
+        return `<img class="${className}" src="${escapeAttribute(userLike.avatar)}" alt="">`;
+      }
+
+      return `<span class="${className}">${escapeHtml(displayName.charAt(0).toUpperCase())}</span>`;
+    }
+
+    function renderReactionBar(targetType, targetId, counts = {}, userReaction = null) {
+      return `
+        <div class="reaction-bar" data-reaction-target="${targetType}" data-target-id="${targetId}">
+          ${REACTIONS.map((reaction) => {
+            const count = counts[reaction.key] || 0;
+            const active = userReaction === reaction.key ? ' active' : '';
+            return `
+              <button type="button" class="reaction-button${active}" data-reaction="${reaction.key}" title="${escapeAttribute(translate(reaction.label))}">
+                <span>${reaction.emoji}</span>
+                <span class="reaction-count">${count}</span>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function applyReactionState(container, counts, userReaction) {
+      container.querySelectorAll('[data-reaction]').forEach((button) => {
+        const reaction = button.dataset.reaction;
+        const countNode = button.querySelector('.reaction-count');
+        button.classList.toggle('active', userReaction === reaction);
+        if (countNode) {
+          countNode.textContent = counts[reaction] || 0;
+        }
+      });
+    }
+
+    function updateNewsInteractionState(newsId, state) {
+      newsItems = newsItems.map((item) => (
+        item.id === newsId
+          ? { ...item, reactionCounts: state.counts, userReaction: state.userReaction }
+          : item
+      ));
+
+      document.querySelectorAll(`.reaction-bar[data-reaction-target="news"][data-target-id="${newsId}"]`).forEach((bar) => {
+        applyReactionState(bar, state.counts, state.userReaction);
+      });
+    }
+
+    function updateNewsCommentCount(newsId, count) {
+      newsItems = newsItems.map((item) => (
+        item.id === newsId ? { ...item, commentCount: count } : item
+      ));
+
+      document.querySelectorAll(`[data-comment-count-for="${newsId}"]`).forEach((node) => {
+        node.textContent = `${translate('commentsButton')} (${count})`;
+      });
+
+      if (activeCommentsNewsId === newsId) {
+        commentsDrawerCount.textContent = `${count} ${translate('commentsCount')}`;
+      }
+    }
+
     function syncProfileForm(user) {
       nicknameInput.value = user.nickname || '';
       avatarInput.value = user.avatar && !user.avatar.startsWith('data:') ? user.avatar : '';
@@ -783,6 +898,16 @@
 
       const canModerate = currentUser && (currentUser.role === 'owner' || currentUser.role === 'moderator');
       const canDeleteOwn = currentUser && currentUser.role === 'reporter' && item.createdBy === currentUser.id && item.status !== 'approved';
+      const interactionControls = !compact
+        ? `
+          <div class="news-discussion-row">
+            ${renderReactionBar('news', item.id, item.reactionCounts, item.userReaction)}
+            <button type="button" class="comments-open-button" data-open-comments="${item.id}" data-comment-count-for="${item.id}">
+              ${escapeHtml(translate('commentsButton'))} (${item.commentCount || 0})
+            </button>
+          </div>
+        `
+        : '';
 
       let moderationControls = '';
       if (canModerate && item.status === 'pending') {
@@ -832,6 +957,7 @@
           <div class="news-item-meta">
             ${authorInfo}
           </div>
+          ${interactionControls}
           ${moderationControls}
         </article>
       `;
@@ -870,12 +996,32 @@
       newsList.innerHTML = news.map((item) => renderNewsCard(item, false)).join('');
       newsList.querySelectorAll('.news-item').forEach((node) => {
         const openItem = () => openNewsModal(Number(node.dataset.newsId));
-        node.addEventListener('click', openItem);
+        node.addEventListener('click', (event) => {
+          if (event.target.closest('button')) {
+            return;
+          }
+          openItem();
+        });
         node.addEventListener('keydown', (event) => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
             openItem();
           }
+        });
+      });
+
+      newsList.querySelectorAll('[data-open-comments]').forEach((button) => {
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          openCommentsDrawer(Number(button.dataset.openComments));
+        });
+      });
+
+      newsList.querySelectorAll('.reaction-bar[data-reaction-target="news"] .reaction-button').forEach((button) => {
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const bar = button.closest('.reaction-bar');
+          handleNewsReaction(Number(bar.dataset.targetId), button.dataset.reaction);
         });
       });
     }
@@ -1070,6 +1216,267 @@
       }, document.body.classList.contains('calm-motion') ? 60 : 180);
     }
 
+    async function handleNewsReaction(newsId, reaction) {
+      playClick('soft');
+      try {
+        const response = await fetch(`/news/${newsId}/reaction`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ reaction })
+        });
+        const state = await response.json();
+
+        if (!response.ok) {
+          throw new Error(state.message || 'Reaction failed');
+        }
+
+        updateNewsInteractionState(newsId, state);
+      } catch (error) {
+        console.error('Error updating reaction:', error);
+      }
+    }
+
+    function renderCommentsNewsCard(item) {
+      const media = item.media
+        ? `<img src="${escapeAttribute(item.media)}" alt="" class="comments-news-media">`
+        : '';
+
+      commentsNewsCard.innerHTML = `
+        <h3 class="selectable-data">${escapeHtml(item.title)}</h3>
+        ${media}
+        <p class="comments-news-text selectable-data">${escapeHtml(item.description)}</p>
+        <p class="news-date selectable-data">${escapeHtml(translate('publicationDate'))}: ${escapeHtml(formatNewsDate(item.created_at))}</p>
+      `;
+    }
+
+    function renderComment(comment) {
+      const canManage = currentUser && (
+        comment.authorId === currentUser.id ||
+        currentUser.role === 'owner' ||
+        currentUser.role === 'moderator'
+      );
+      const canEdit = currentUser && comment.authorId === currentUser.id;
+      const displayName = getDisplayName(comment);
+      const updatedMark = comment.updatedAt && comment.updatedAt !== comment.createdAt ? ` · ${translate('commentEdited')}` : '';
+
+      return `
+        <article class="comment-item" data-comment-id="${comment.id}">
+          ${getAvatarMarkup(comment)}
+          <div class="comment-bubble">
+            <div class="comment-meta">
+              <span class="comment-author selectable-data">${escapeHtml(displayName)}</span>
+              <span class="comment-time selectable-data">${escapeHtml(formatCommentDate(comment.createdAt))}${updatedMark}</span>
+            </div>
+            <p class="comment-text selectable-data">${escapeHtml(comment.text)}</p>
+            <div class="comment-footer">
+              ${renderReactionBar('comment', comment.id, comment.reactionCounts, comment.userReaction)}
+              ${canEdit ? `<button type="button" class="comment-action" data-edit-comment="${comment.id}">${escapeHtml(translate('commentEdit'))}</button>` : ''}
+              ${canManage ? `<button type="button" class="comment-action danger" data-delete-comment="${comment.id}">${escapeHtml(translate('commentDelete'))}</button>` : ''}
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderComments(comments) {
+      if (!comments.length) {
+        commentsList.innerHTML = `
+          <div class="comments-empty">
+            <h3 data-text="commentsEmptyTitle">${escapeHtml(translate('commentsEmptyTitle'))}</h3>
+            <p data-text="commentsEmptyText">${escapeHtml(translate('commentsEmptyText'))}</p>
+          </div>
+        `;
+        return;
+      }
+
+      commentsList.innerHTML = comments.map(renderComment).join('');
+      bindCommentActions();
+      commentsList.scrollTop = commentsList.scrollHeight;
+    }
+
+    function bindCommentActions() {
+      commentsList.querySelectorAll('.reaction-bar[data-reaction-target="comment"] .reaction-button').forEach((button) => {
+        button.addEventListener('click', () => {
+          const bar = button.closest('.reaction-bar');
+          handleCommentReaction(Number(bar.dataset.targetId), button.dataset.reaction);
+        });
+      });
+
+      commentsList.querySelectorAll('[data-delete-comment]').forEach((button) => {
+        button.addEventListener('click', () => deleteComment(Number(button.dataset.deleteComment)));
+      });
+
+      commentsList.querySelectorAll('[data-edit-comment]').forEach((button) => {
+        button.addEventListener('click', () => startCommentEdit(Number(button.dataset.editComment)));
+      });
+    }
+
+    async function openCommentsDrawer(newsId) {
+      const item = newsItems.find((entry) => entry.id === newsId);
+      if (!item) {
+        return;
+      }
+
+      playClick('soft');
+      activeCommentsNewsId = newsId;
+      renderCommentsNewsCard(item);
+      commentsDrawerCount.textContent = `${item.commentCount || 0} ${translate('commentsCount')}`;
+      commentsList.innerHTML = `<p class="loading">${escapeHtml(translate('loadingProfile'))}</p>`;
+      commentInput.value = '';
+      commentsDrawer.hidden = false;
+      requestAnimationFrame(() => {
+        commentsDrawer.classList.add('open');
+      });
+      await loadComments(newsId);
+    }
+
+    function closeCommentsDrawer() {
+      playClick('soft');
+      commentsDrawer.classList.remove('open');
+      setTimeout(() => {
+        commentsDrawer.hidden = true;
+        activeCommentsNewsId = null;
+      }, document.body.classList.contains('calm-motion') ? 60 : 180);
+    }
+
+    async function loadComments(newsId) {
+      try {
+        const response = await fetch(`/news/${newsId}/comments`, {
+          headers: authHeaders()
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || translate('commentLoadError'));
+        }
+
+        renderComments(data.comments || []);
+      } catch (error) {
+        commentsList.innerHTML = `<p class="message error">${escapeHtml(translate('commentLoadError'))}</p>`;
+      }
+    }
+
+    async function submitComment(event) {
+      event.preventDefault();
+
+      if (!activeCommentsNewsId) {
+        return;
+      }
+
+      const text = commentInput.value.trim();
+      if (!text) {
+        return;
+      }
+
+      playClick('soft');
+      try {
+        const response = await fetch(`/news/${activeCommentsNewsId}/comments`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ text })
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || translate('commentPostError'));
+        }
+
+        commentInput.value = '';
+        updateNewsCommentCount(activeCommentsNewsId, data.commentCount);
+        await loadComments(activeCommentsNewsId);
+      } catch (error) {
+        commentsList.insertAdjacentHTML('beforeend', `<p class="message error">${escapeHtml(translate('commentPostError'))}</p>`);
+      }
+    }
+
+    function startCommentEdit(commentId) {
+      const commentNode = commentsList.querySelector(`[data-comment-id="${commentId}"]`);
+      if (!commentNode) {
+        return;
+      }
+
+      const textNode = commentNode.querySelector('.comment-text');
+      const originalText = textNode ? textNode.textContent : '';
+      const bubble = commentNode.querySelector('.comment-bubble');
+      bubble.innerHTML = `
+        <textarea class="comment-edit-input selectable-data" rows="3">${escapeHtml(originalText)}</textarea>
+        <div class="comment-edit-actions">
+          <button type="button" class="secondary-button" data-save-comment="${commentId}">${escapeHtml(translate('commentSave'))}</button>
+          <button type="button" class="secondary-button" data-cancel-edit>${escapeHtml(translate('commentCancel'))}</button>
+        </div>
+      `;
+
+      bubble.querySelector('[data-save-comment]').addEventListener('click', () => saveCommentEdit(commentId, bubble.querySelector('.comment-edit-input').value));
+      bubble.querySelector('[data-cancel-edit]').addEventListener('click', () => loadComments(activeCommentsNewsId));
+    }
+
+    async function saveCommentEdit(commentId, text) {
+      const value = text.trim();
+      if (!value) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/comments/${commentId}`, {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({ text: value })
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || translate('commentPostError'));
+        }
+
+        await loadComments(activeCommentsNewsId);
+      } catch (error) {
+        console.error('Error editing comment:', error);
+      }
+    }
+
+    async function deleteComment(commentId) {
+      playClick('muted');
+      try {
+        const response = await fetch(`/comments/${commentId}`, {
+          method: 'DELETE',
+          headers: authHeaders()
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || translate('commentPostError'));
+        }
+
+        updateNewsCommentCount(data.newsId, data.commentCount);
+        await loadComments(data.newsId);
+      } catch (error) {
+        console.error('Error deleting comment:', error);
+      }
+    }
+
+    async function handleCommentReaction(commentId, reaction) {
+      playClick('soft');
+      try {
+        const response = await fetch(`/comments/${commentId}/reaction`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ reaction })
+        });
+        const state = await response.json();
+
+        if (!response.ok) {
+          throw new Error(state.message || 'Reaction failed');
+        }
+
+        const bar = commentsList.querySelector(`.reaction-bar[data-target-id="${commentId}"]`);
+        if (bar) {
+          applyReactionState(bar, state.counts, state.userReaction);
+        }
+      } catch (error) {
+        console.error('Error updating comment reaction:', error);
+      }
+    }
+
     async function loadNews() {
       homeNewsPreview.innerHTML = `<li class="loading">${escapeHtml(translate('loadingProfile'))}</li>`;
       newsList.innerHTML = `<p class="loading">${escapeHtml(translate('loadingProfile'))}</p>`;
@@ -1208,9 +1615,15 @@
         closeNewsModal();
       }
     });
+    commentsCloseButton.addEventListener('click', closeCommentsDrawer);
+    commentsBackdrop.addEventListener('click', closeCommentsDrawer);
+    commentForm.addEventListener('submit', submitComment);
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && !newsModal.hidden) {
         closeNewsModal();
+      }
+      if (event.key === 'Escape' && !commentsDrawer.hidden) {
+        closeCommentsDrawer();
       }
     });
 
