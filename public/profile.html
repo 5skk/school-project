@@ -44,6 +44,19 @@
     </button>
   </div>
 
+  <button id="mobileMenuButton" class="mobile-menu-button glass-icon-button" type="button" data-label="menuLabel" aria-expanded="false" aria-controls="sectionNav">
+    <svg class="mobile-menu-icon" viewBox="0 0 48 48" aria-hidden="true">
+      <defs>
+        <linearGradient id="mobileMenuGradient" x1="12" y1="16" x2="36" y2="32">
+          <stop offset="0%" stop-color="#8bd3ff" />
+          <stop offset="100%" stop-color="#b08cff" />
+        </linearGradient>
+      </defs>
+      <path d="M12 16h24M12 24h24M12 32h24" fill="none" stroke="url(#mobileMenuGradient)" stroke-width="3" stroke-linecap="round" />
+    </svg>
+  </button>
+  <div id="mobileNavBackdrop" class="mobile-nav-backdrop" hidden></div>
+
   <main class="dashboard-shell">
     <nav class="topbar glass-card">
       <div>
@@ -52,7 +65,7 @@
       </div>
     </nav>
 
-    <nav class="section-nav glass-card" aria-label="Main navigation">
+    <nav id="sectionNav" class="section-nav glass-card" aria-label="Main navigation">
       <button type="button" class="nav-link active" data-section="home" data-text="navHome">Home</button>
       <button type="button" class="nav-link" data-section="news" data-text="navNews">News</button>
       <button type="button" class="nav-link" data-section="books" data-text="navBooks">Books</button>
@@ -230,8 +243,8 @@
           <label for="publicationDescriptionInput" data-text="publicationDescription">Description</label>
           <textarea id="publicationDescriptionInput" name="description" class="selectable-data" rows="6" maxlength="10000" required></textarea>
 
-          <label for="publicationImageInput">Upload Image</label>
-          <input id="publicationImageInput" name="image" class="selectable-data" type="file" accept="image/jpeg,image/jpg,image/png,image/webp">
+          <label for="publicationImageInput" data-text="uploadImageLabel">Upload Image</label>
+          <input id="publicationImageInput" name="image" class="selectable-data" type="file" accept="image/*" capture="environment">
 
           <div id="imagePreviewContainer" class="image-preview-container" hidden>
             <img id="imagePreview" class="image-preview" alt="Image preview">
@@ -429,6 +442,8 @@
     const commentsDrawerCount = document.getElementById('commentsDrawerCount');
     const commentForm = document.getElementById('commentForm');
     const commentInput = document.getElementById('commentInput');
+    const mobileMenuButton = document.getElementById('mobileMenuButton');
+    const mobileNavBackdrop = document.getElementById('mobileNavBackdrop');
     const accountEmail = document.getElementById('accountEmail');
     const accountRole = document.getElementById('accountRole');
     const accountJoined = document.getElementById('accountJoined');
@@ -590,6 +605,7 @@
       switchPanel(getActivePanel(), nextSection);
       setActiveNav(sectionName);
       updateSectionHeading(sectionName);
+      closeMobileNav();
 
       if (sectionName === 'news' && newsItems.length === 0) {
         loadNews();
@@ -786,9 +802,9 @@
     function renderStudents() {
       studentsBody.innerHTML = MOCK_STUDENTS.map((student) => `
         <tr>
-          <td class="selectable-data">${escapeHtml(student.id)}</td>
-          <td class="selectable-data">${escapeHtml(student.fullName)}</td>
-          <td class="selectable-data">${escapeHtml(student.birthDate)}</td>
+          <td class="selectable-data" data-cell-label="${escapeHtml(translate('studentsId'))}">${escapeHtml(student.id)}</td>
+          <td class="selectable-data" data-cell-label="${escapeHtml(translate('studentsFullName'))}">${escapeHtml(student.fullName)}</td>
+          <td class="selectable-data" data-cell-label="${escapeHtml(translate('studentsBirthDate'))}">${escapeHtml(student.birthDate)}</td>
         </tr>
       `).join('');
     }
@@ -810,21 +826,21 @@
         })
         .catch((error) => {
           console.error('Error loading users:', error);
-          usersBody.innerHTML = '<tr><td colspan="6" class="selectable-data">Failed to load users</td></tr>';
+          usersBody.innerHTML = `<tr><td colspan="6" class="selectable-data">${escapeHtml(translate('usersLoadError'))}</td></tr>`;
         });
     }
 
     function renderUsers(users) {
       usersBody.innerHTML = users.map((user) => `
         <tr>
-          <td class="selectable-data">${escapeHtml(user.id)}</td>
-          <td>
+          <td class="selectable-data" data-cell-label="${escapeHtml(translate('usersTableId'))}">${escapeHtml(user.id)}</td>
+          <td data-cell-label="${escapeHtml(translate('usersTableAvatar'))}">
             ${user.avatar ? `<img src="${escapeHtml(user.avatar)}" alt="" class="user-avatar" data-alt="avatarLabel">` : '<div class="user-avatar"></div>'}
           </td>
-          <td class="selectable-data">${escapeHtml(user.nickname || '-')}</td>
-          <td class="selectable-data">${escapeHtml(user.email)}</td>
-          <td><span class="role-badge ${escapeHtml(user.role || 'user')}">${translate('role' + (user.role || 'user').charAt(0).toUpperCase() + (user.role || 'user').slice(1))}</span></td>
-          <td>
+          <td class="selectable-data" data-cell-label="${escapeHtml(translate('usersTableNickname'))}">${escapeHtml(user.nickname || '-')}</td>
+          <td class="selectable-data" data-cell-label="${escapeHtml(translate('usersTableEmail'))}">${escapeHtml(user.email)}</td>
+          <td data-cell-label="${escapeHtml(translate('usersTableRole'))}"><span class="role-badge ${escapeHtml(user.role || 'user')}">${translate('role' + (user.role || 'user').charAt(0).toUpperCase() + (user.role || 'user').slice(1))}</span></td>
+          <td data-cell-label="${escapeHtml(translate('usersTableActions'))}">
             <select class="role-select" data-user-id="${escapeHtml(user.id)}" onchange="handleRoleChange(this)">
               <option value="user" ${user.role === 'user' ? 'selected' : ''}>${translate('roleUser')}</option>
               <option value="reporter" ${user.role === 'reporter' ? 'selected' : ''}>${translate('roleReporter')}</option>
@@ -834,6 +850,19 @@
           </td>
         </tr>
       `).join('');
+    }
+
+    function openMobileNav() {
+      playClick('soft');
+      document.body.classList.add('mobile-nav-open');
+      mobileMenuButton.setAttribute('aria-expanded', 'true');
+      mobileNavBackdrop.hidden = false;
+    }
+
+    function closeMobileNav() {
+      document.body.classList.remove('mobile-nav-open');
+      mobileMenuButton.setAttribute('aria-expanded', 'false');
+      mobileNavBackdrop.hidden = true;
     }
 
     function handleRoleChange(select) {
@@ -1533,6 +1562,21 @@
       });
     });
 
+    mobileMenuButton.addEventListener('click', () => {
+      if (document.body.classList.contains('mobile-nav-open')) {
+        closeMobileNav();
+        return;
+      }
+
+      openMobileNav();
+    });
+    mobileNavBackdrop.addEventListener('click', closeMobileNav);
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        closeMobileNav();
+      }
+    });
+
     homeViewNewsButton.addEventListener('click', () => {
       showSection('news');
     });
@@ -1558,10 +1602,14 @@
         playClick('soft');
         setTimeout(() => {
           updateSectionHeading(currentSection);
+          renderStudents();
           renderHomeworkPreview();
           if (newsItems.length) {
             renderHomeNews(newsItems);
             renderNewsPage(newsItems);
+          }
+          if (currentUser && (currentUser.role === 'owner' || currentUser.role === 'moderator')) {
+            loadUsers();
           }
         }, 0);
       });
