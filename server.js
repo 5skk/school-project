@@ -1095,6 +1095,8 @@ function isValidAvatarValue(value) {
   }
 }
 
-app.listen(PORT, () => {
-  console.log(`School class website running at http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`School class website running at http://0.0.0.0:${PORT}`);
+  console.log(`Open from this computer: http://localhost:${PORT}`);
+  console.log('Open from a phone on the same Wi-Fi: http://YOUR_COMPUTER_LAN_IP:' + PORT);
 });
