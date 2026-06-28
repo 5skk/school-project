@@ -248,7 +248,7 @@ button:hover {
   right: 18px;
   display: grid;
   gap: 10px;
-  z-index: 10;
+  z-index: 40;
 }
 
 .mobile-menu-button,
@@ -260,7 +260,7 @@ button:hover {
   position: fixed;
   top: 18px;
   left: 18px;
-  z-index: 32;
+  z-index: 42;
 }
 
 .mobile-menu-icon {
@@ -272,7 +272,7 @@ button:hover {
 .mobile-nav-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 24;
+  z-index: 28;
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(0);
   -webkit-backdrop-filter: blur(0);
@@ -1534,6 +1534,7 @@ body.calm-motion .panel-view {
   .corner-controls {
     top: 12px;
     right: 12px;
+    gap: 8px;
   }
 
   .mobile-menu-button {
@@ -1542,6 +1543,11 @@ body.calm-motion .panel-view {
     left: 12px;
     width: 48px;
     min-height: 48px;
+  }
+
+  .glass-icon-button {
+    min-width: 44px;
+    min-height: 44px;
   }
 
   .mobile-nav-backdrop:not([hidden]) {
@@ -1553,7 +1559,7 @@ body.calm-motion .panel-view {
     top: 74px;
     left: 12px;
     bottom: 12px;
-    z-index: 30;
+    z-index: 35;
     display: grid;
     align-content: start;
     width: min(310px, calc(100vw - 24px));
