@@ -341,9 +341,14 @@ app.post('/login', (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password.' });
     }
 
-    const passwordMatches = await bcrypt.compare(password, user.password);
-    if (!passwordMatches) {
-      return res.status(401).json({ message: 'Invalid email or password.' });
+    try {
+      const passwordMatches = await bcrypt.compare(password, user.password);
+      if (!passwordMatches) {
+        return res.status(401).json({ message: 'Invalid email or password.' });
+      }
+    } catch (compareError) {
+      console.error('Password comparison failed:', compareError.message);
+      return res.status(500).json({ message: 'Could not log in.' });
     }
 
     const token = jwt.sign(
@@ -1094,6 +1099,33 @@ function isValidAvatarValue(value) {
     return false;
   }
 }
+
+// Global error-handling middleware — catches multer errors and other unhandled
+// exceptions that occur inside route handlers or middleware.
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ message: 'File is too large. Maximum size is 5 MB.' });
+    }
+    return res.status(400).json({ message: `Upload error: ${err.message}` });
+  }
+
+  if (err.message && err.message.includes('Only JPEG')) {
+    return res.status(400).json({ message: err.message });
+  }
+
+  console.error('Unhandled error in request:', err);
+  return res.status(500).json({ message: 'An unexpected error occurred.' });
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception:', error);
+  process.exit(1);
+});
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`School class website running at http://0.0.0.0:${PORT}`);

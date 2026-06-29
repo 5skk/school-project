@@ -23,7 +23,12 @@ db.serialize(() => {
       theme TEXT DEFAULT 'blue',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
-  `);
+  `, (error) => {
+    if (error) {
+      console.error('Failed to create users table:', error.message);
+      process.exit(1);
+    }
+  });
 
   // Existing databases are upgraded gently without changing stored auth data.
   db.run('ALTER TABLE users ADD COLUMN nickname TEXT', (error) => {
@@ -116,7 +121,7 @@ db.serialize(() => {
   `, (createNewsError) => {
     if (createNewsError) {
       console.error('Failed to create news table:', createNewsError.message);
-      return;
+      process.exit(1);
     }
 
     // Add new columns if table already exists but doesn't have them
@@ -168,7 +173,12 @@ db.serialize(() => {
       FOREIGN KEY (newsId) REFERENCES news(id) ON DELETE CASCADE,
       FOREIGN KEY (authorId) REFERENCES users(id) ON DELETE CASCADE
     )
-  `);
+  `, (error) => {
+    if (error) {
+      console.error('Failed to create comments table:', error.message);
+      process.exit(1);
+    }
+  });
 
   db.run(`
     CREATE TABLE IF NOT EXISTS news_reactions (
@@ -181,7 +191,12 @@ db.serialize(() => {
       FOREIGN KEY (newsId) REFERENCES news(id) ON DELETE CASCADE,
       FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
     )
-  `);
+  `, (error) => {
+    if (error) {
+      console.error('Failed to create news_reactions table:', error.message);
+      process.exit(1);
+    }
+  });
 
   db.run(`
     CREATE TABLE IF NOT EXISTS comment_reactions (
@@ -194,7 +209,12 @@ db.serialize(() => {
       FOREIGN KEY (commentId) REFERENCES comments(id) ON DELETE CASCADE,
       FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
     )
-  `);
+  `, (error) => {
+    if (error) {
+      console.error('Failed to create comment_reactions table:', error.message);
+      process.exit(1);
+    }
+  });
 });
 
 module.exports = db;
