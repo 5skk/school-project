@@ -1,8 +1,13 @@
 const db = require('./db');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
-const email = 'kik675846@gmail.com';
-const newPassword = '123456';
+const email = process.argv[2] || 'kik675846@gmail.com';
+const newPassword = process.argv[3] || crypto.randomBytes(12).toString('base64url');
+const isGenerated = !process.argv[3];
+
+console.log(`Usage: node reset-password.js [email] [password]`);
+console.log(`If no password is provided, a secure random one will be generated.\n`);
 
 db.get('SELECT * FROM users WHERE email = ?', [email], async (error, user) => {
   if (error) {

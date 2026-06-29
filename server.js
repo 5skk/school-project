@@ -4,15 +4,33 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const multer = require('multer');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
 const db = require('./db');
 
 const app = express();
-const PORT = 3000;
-const JWT_SECRET = 'demo_school_class_secret_change_me';
+const PORT = process.env.PORT || 3000;
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
 const SALT_ROUNDS = 10;
 
+if (!process.env.JWT_SECRET) {
+  console.warn('WARNING: JWT_SECRET not set. A random secret was generated. Tokens will not persist across restarts. Set JWT_SECRET in your environment.');
+}
+
+app.use(helmet({
+  contentSecurityPolicy: false
+}));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { message: 'Too many attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
 
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
@@ -283,7 +301,7 @@ function getUserRole(userId, callback) {
   });
 }
 
-app.post('/register', async (req, res) => {
+app.post('/register', authLimiter, async (req, res) => {
   const email = String(req.body.email || '').trim().toLowerCase();
   const password = req.body.password;
 
@@ -322,7 +340,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', authLimiter, (req, res) => {
   const email = String(req.body.email || '').trim().toLowerCase();
   const password = req.body.password;
 
@@ -482,16 +500,11 @@ app.get('/news', authenticateToken, (req, res) => {
 });
 
 app.post('/upload', authenticateToken, requireRole(['owner', 'reporter']), upload.single('image'), (req, res) => {
-  console.log('POST /upload request from user:', req.user.id, req.user.email);
-  console.log('File received:', req.file);
-
   if (!req.file) {
-    console.log('Error: No file uploaded');
     return res.status(400).json({ message: 'No file uploaded.' });
   }
 
   const imageUrl = `/uploads/${req.file.filename}`;
-  console.log('Image uploaded successfully:', imageUrl);
 
   return res.json({
     message: 'Image uploaded successfully.',
@@ -500,23 +513,16 @@ app.post('/upload', authenticateToken, requireRole(['owner', 'reporter']), uploa
 });
 
 app.post('/news', authenticateToken, requireRole(['owner', 'reporter']), (req, res) => {
-  console.log('POST /news request from user:', req.user.id, req.user.email);
-  console.log('Request body:', req.body);
-
   const title = String(req.body.title || '').trim().slice(0, 200);
   const description = String(req.body.description || '').trim().slice(0, 10000);
   const media = String(req.body.media || '').trim().slice(0, 500);
   const isImportant = req.body.isImportant ? 1 : 0;
 
-  console.log('Parsed data - title:', title, 'description length:', description.length, 'media:', media, 'isImportant:', isImportant);
-
   if (!title) {
-    console.log('Error: Title is required');
     return res.status(400).json({ message: 'Title is required.' });
   }
 
   if (!description) {
-    console.log('Error: Description is required');
     return res.status(400).json({ message: 'Description is required.' });
   }
 
@@ -525,11 +531,9 @@ app.post('/news', authenticateToken, requireRole(['owner', 'reporter']), (req, r
     [title, description, media, isImportant, 'pending', req.user.id],
     function (error) {
       if (error) {
-        console.error('Database error creating news:', error.message);
-        return res.status(500).json({ message: 'Could not create news: ' + error.message });
+        return res.status(500).json({ message: 'Could not create news.' });
       }
 
-      console.log('News created successfully with ID:', this.lastID);
       return res.json({
         message: 'News created successfully.',
         news: {
